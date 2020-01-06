@@ -9,7 +9,7 @@ Scene::Scene()
 
 void Scene::onUpdate(float delta)
 {
-    if (escape_key.getDown())
+    if (escape_key.getUp())
     {
         delete this;
         openMainMenu();
