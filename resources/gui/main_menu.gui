@@ -35,6 +35,13 @@
             keybinding: ESCAPE
         }
     }
+
+    [MOD] {
+        @ref: MAIN_BUTTON
+        caption: LOAD MOD
+        alignment: bottomleft
+        visible: false
+    }
 }
 
 [OPTIONS_MENU] {

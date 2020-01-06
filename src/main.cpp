@@ -2,6 +2,8 @@
 #include <sp2/window.h>
 #include <sp2/logging.h>
 #include <sp2/io/resourceProvider.h>
+#include <sp2/io/zipResourceProvider.h>
+#include <sp2/io/fileSelectionDialog.h>
 #include <sp2/audio/sound.h>
 #include <sp2/audio/music.h>
 #include <sp2/graphics/gui/scene.h>
@@ -24,12 +26,17 @@ sp::P<sp::Window> window;
 sp::io::Keybinding escape_key("ESCAPE", {"Escape", "AC Back"});
 Controller controller;
 
+//Set to true to enable mod loading support.
+static bool can_load_mod = false;
+
+
 static void openOptionsMenu();
 static void openCreditsMenu();
 void openMainMenu()
 {
     sp::P<sp::gui::Widget> menu = sp::gui::Loader::load("gui/main_menu.gui", "MAIN_MENU");
     menu->getWidgetWithID("START")->setEventCallback([=](sp::Variant v) mutable {
+        can_load_mod = false;
         menu.destroy();
         new Scene();
     });
@@ -43,6 +50,22 @@ void openMainMenu()
     });
     menu->getWidgetWithID("QUIT")->setEventCallback([](sp::Variant v){
         sp::Engine::getInstance()->shutdown();
+    });
+    menu->getWidgetWithID("MOD")->setVisible(can_load_mod);
+    menu->getWidgetWithID("MOD")->setEventCallback([=](sp::Variant v) mutable {
+        sp::io::openFileDialog(".zip", [=](const sp::string& filename) mutable {
+            if (can_load_mod)
+            {
+                can_load_mod = false;
+                LOG(Info, "Loading mod:", filename);
+                new sp::io::ZipResourceProvider(filename, 1);
+                if (menu)
+                {
+                    menu.destroy();
+                    openMainMenu();
+                }
+            }
+        });
     });
 #ifdef EMSCRIPTEN
     menu->getWidgetWithID("QUIT")->hide();
