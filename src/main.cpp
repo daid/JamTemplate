@@ -19,15 +19,16 @@
 #include "main.h"
 #include "mainScene.h"
 
+
 sp::P<sp::Window> window;
 sp::io::Keybinding escape_key("ESCAPE", {"Escape", "AC Back"});
+Controller controller;
 
 static void openOptionsMenu();
 static void openCreditsMenu();
 void openMainMenu()
 {
     sp::P<sp::gui::Widget> menu = sp::gui::Loader::load("gui/main_menu.gui", "MAIN_MENU");
-
     menu->getWidgetWithID("START")->setEventCallback([=](sp::Variant v) mutable {
         menu.destroy();
         new Scene();

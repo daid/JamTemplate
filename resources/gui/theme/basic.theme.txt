@@ -15,6 +15,8 @@
     [button.background] {
         image: gui/theme/pixel.png
         color: #404040
+        sound: gui/theme/buttonDown.wav
+        sound.hovered: gui/theme/buttonUp.wav
     }
     [panel] {
         image: gui/theme/square.png
