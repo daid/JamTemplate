@@ -17,6 +17,8 @@ public:
     sp::io::Keybinding secondary_action;
     sp::io::Keybinding protect_action;
     sp::io::Keybinding special_action;
+
+    sp::PList<sp::io::Keybinding> all;
 };
 
 #endif//CONTROLLER_H

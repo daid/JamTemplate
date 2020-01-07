@@ -47,7 +47,7 @@
 [OPTIONS_MENU] {
     stretch: true
 
-    {
+    [OPTIONS] {
         layout: vertical
         alignment: center
         match_content_size: true
@@ -57,6 +57,21 @@
         }
         [MUSIC_VOLUME] {
             @ref: OPTIONS_SLIDER LABEL=Music volume:
+        }
+        
+        {
+            type: label
+            caption: Controls
+            fill_width: true
+            height: 40
+            
+            [REBIND] {
+                type: button
+                caption: REBIND
+                size: 75, 30
+                alignment: right
+                text.size: 20
+            }
         }
     }
 
@@ -72,12 +87,30 @@
     }
 }
 
+[REBIND_MENU] {
+    match_content_size: true
+    alignment: center
+    layout: vertical
+    {
+        type: label
+        caption: Press button for:
+        scale_to_text: true
+        alignment: center
+    }
+    [KEY_NAME] {
+        type: label
+        caption: XXX
+        scale_to_text: true
+        alignment: center
+    }
+}
+
 [CREDITS_MENU] {
     stretch: true
     
     [CREDITS] {
         layout: vertical
-        position: 0, 200
+        position: 0, 400
         alignment: top
         match_content_size: true
         {
@@ -223,6 +256,27 @@
         size: 300, 30
         type: slider
         range: 100
+    }
+}
+[@OPTIONS_KEYBINDING] {
+    fill_width: true
+    height: 20
+    layout: horizontal
+    [NAME] {
+        type: label
+        fill_height: true
+        width: 150
+        caption: ...
+        text.size: 20
+        text.alignment: right
+        margin: 0, 5, 0, 0
+    }
+    [VALUE] {
+        type: label
+        stretch: true
+        caption: ...
+        text.size: 20
+        text.alignment: left
     }
 }
 [@CREDITS_SECTION] {
