@@ -7,6 +7,7 @@ class Scene : public sp::Scene
 {
 public:
     Scene();
+    ~Scene();
 
     virtual void onUpdate(float delta) override;
 };

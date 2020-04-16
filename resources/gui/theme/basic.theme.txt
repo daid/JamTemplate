@@ -22,6 +22,10 @@
         image: gui/theme/square.png
 		color: #FFFFFFA0
 		size: 8
+        [overlay] {
+            image: gui/theme/pixel.png
+            color: #000000A0
+        }
     }
     [progressbar] {
     }
