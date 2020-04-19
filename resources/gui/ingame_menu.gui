@@ -11,6 +11,13 @@
         [EXIT] {
             @ref: BUTTON
             caption: Exit
+
+            {
+                type: keynavigator
+                margin: -5
+                stretch: true
+                select: PRIMARY
+            }
         }
 
         [BACK] {

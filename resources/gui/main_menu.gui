@@ -16,6 +16,13 @@
         [START] {
             @ref: MAIN_BUTTON
             caption: START
+
+            {
+                type: keynavigator
+                margin: -5
+                stretch: true
+                select: PRIMARY
+            }
         }
 
         [OPTIONS] {
@@ -73,6 +80,12 @@
             @ref: MAIN_BUTTON
             caption: BACK
             keybinding: ESCAPE
+            {
+                type: keynavigator
+                margin: -5
+                stretch: true
+                select: PRIMARY
+            }
         }
     }
 }
@@ -211,6 +224,12 @@
             @ref: MAIN_BUTTON
             caption: BACK
             keybinding: ESCAPE
+            {
+                type: keynavigator
+                margin: -5
+                stretch: true
+                select: PRIMARY
+            }
         }
     }
 }

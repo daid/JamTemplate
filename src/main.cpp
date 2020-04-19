@@ -164,7 +164,7 @@ int main(int argc, char** argv)
     sp::io::ResourceProvider::createDefault();
 
     //Disable or enable smooth filtering by default, enabling it gives nice smooth looks, but disabling it gives a more pixel art look.
-    sp::texture_manager.setDefaultSmoothFiltering(false);
+    sp::texture_manager.setDefaultSmoothFiltering(true);
 
     //Create a window to render on, and our engine.
     window = new sp::Window();
