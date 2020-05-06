@@ -46,4 +46,9 @@
     }
     [image] {
     }
+    [textarea] {
+        font: gui/theme/RobotoMono-Medium.ttf
+    }
+    [textfield] {
+    }
 }

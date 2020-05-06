@@ -10,6 +10,7 @@
 #include <sp2/graphics/gui/scene.h>
 #include <sp2/graphics/gui/theme.h>
 #include <sp2/graphics/gui/loader.h>
+#include <sp2/graphics/gui/widget/button.h>
 #include <sp2/graphics/scene/graphicslayer.h>
 #include <sp2/graphics/scene/basicnoderenderpass.h>
 #include <sp2/graphics/scene/collisionrenderpass.h>
@@ -31,7 +32,7 @@ Controller controller;
 
 static void openOptionsMenu();
 static void openCreditsMenu();
-static void openRebindMenu();
+static void openControlsMenu();
 void openMainMenu()
 {
     sp::P<sp::gui::Widget> menu = sp::gui::Loader::load("gui/main_menu.gui", "MAIN_MENU");
@@ -70,66 +71,86 @@ static void openOptionsMenu()
         menu->getWidgetWithID("MUSIC_VOLUME")->getWidgetWithID("VALUE")->setAttribute("caption", sp::string(v.getInteger()) + "%");
         sp::audio::Music::setVolume(v.getInteger());
     });
-    menu->getWidgetWithID("REBIND")->setEventCallback([=](sp::Variant v) mutable {
+    menu->getWidgetWithID("CONTROLS")->setEventCallback([=](sp::Variant v) mutable {
         menu.destroy();
-        openRebindMenu();
+        openControlsMenu();
     });
     menu->getWidgetWithID("BACK")->setEventCallback([=](sp::Variant v) mutable {
         menu.destroy();
         openMainMenu();
     });
-
-    for(auto keybinding : controller.all)
-    {
-        sp::P<sp::gui::Widget> keybinding_menu = sp::gui::Loader::load("gui/main_menu.gui", "@OPTIONS_KEYBINDING", menu->getWidgetWithID("OPTIONS"));
-        keybinding_menu->getWidgetWithID("NAME")->setAttribute("caption", keybinding->getLabel() + ":");
-        sp::string value = keybinding->getHumanReadableKeyName(0);
-        //for(int n=1; keybinding->getHumanReadableKeyName(n) != ""; n++)
-        //    value += ", " + keybinding->getHumanReadableKeyName(n);
-        keybinding_menu->getWidgetWithID("VALUE")->setAttribute("caption", value.strip());
-    }
 }
 
 class Rebinder : public sp::Node
 {
 public:
-    Rebinder(sp::P<sp::Node> parent)
-    : sp::Node(parent), binding(controller.all.begin())
+    Rebinder(sp::P<sp::gui::Widget> parent, sp::P<sp::io::Keybinding> binding, int key_index)
+    : sp::Node(parent), binding(binding), index(key_index)
     {
-        (*binding)->clearKeys();
-        (*binding)->startUserRebind();
+        //binding->clearKeys();
+        binding->startUserRebind();
         sp::P<sp::gui::Widget> w = getParent();
-        w->getWidgetWithID("KEY_NAME")->setAttribute("caption", (*binding)->getLabel());
+        parent->setAttribute("caption", "?");
     }
 
     virtual void onUpdate(float delta) override
     {
-        if (!(*binding)->isUserRebinding())
+        if (!binding->isUserRebinding())
         {
-            ++binding;
-            if (binding == controller.all.end())
+            std::vector<sp::string> keys;
+            for(int n=0; !binding->getKey(n).empty(); n++)
+                keys.push_back(binding->getKey(n));
+            if (keys.size() > index + 1)
             {
-                getParent().destroy();
-                openOptionsMenu();
+                keys[index] = keys.back();
+                keys.pop_back();
             }
-            else
+            binding->clearKeys();
+            for(const auto& key : keys)
+                binding->addKey(key);
+
+            int idx = 0;
+            for(sp::P<sp::gui::Button> w : getParent()->getParent()->getChildren())
             {
-                (*binding)->clearKeys();
-                (*binding)->startUserRebind();
-                sp::P<sp::gui::Widget> w = getParent();
-                w->getWidgetWithID("KEY_NAME")->setAttribute("caption", (*binding)->getLabel());
+                if (w)
+                {
+                    w->setAttribute("caption", binding->getHumanReadableKeyName(idx));
+                    idx ++;
+                }
             }
+            delete this;
         }
     }
 
 private:
-    sp::PList<sp::io::Keybinding>::Iterator binding;
+    sp::P<sp::io::Keybinding> binding;
+    int index;
 };
 
-static void openRebindMenu()
+static void openControlsMenu()
 {
-    sp::P<sp::gui::Widget> menu = sp::gui::Loader::load("gui/main_menu.gui", "REBIND_MENU");
-    new Rebinder(menu);
+    sp::gui::Loader loader("gui/main_menu.gui");
+    sp::P<sp::gui::Widget> menu = loader.create("CONTROLS_MENU");
+    //new Rebinder(menu);
+
+    for(auto keybinding : controller.all)
+    {
+        sp::P<sp::gui::Widget> keybinding_menu = loader.create("@CONTROLS_KEYBINDING", menu->getWidgetWithID("KEYS"));
+        keybinding_menu->getWidgetWithID("NAME")->setAttribute("caption", keybinding->getLabel() + ":");
+        for(int n=0; n<4; n++)
+        {
+            auto button = loader.create("@CONTROLS_KEYBINDING_BUTTON", keybinding_menu);
+            button->setAttribute("caption", keybinding->getHumanReadableKeyName(n));
+            button->setEventCallback([=](sp::Variant v) mutable
+            {
+                new Rebinder(button, keybinding, n);
+            });
+        }
+    }
+    menu->getWidgetWithID("BACK")->setEventCallback([=](sp::Variant v) mutable {
+        menu.destroy();
+        openOptionsMenu();
+    });
 }
 
 class AutoCreditScroller : public sp::Node

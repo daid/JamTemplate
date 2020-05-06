@@ -57,19 +57,9 @@
             @ref: OPTIONS_SLIDER LABEL=Music volume:
         }
         
-        {
-            type: label
+        [CONTROLS] {
+            @ref: MAIN_BUTTON
             caption: Controls
-            fill_width: true
-            height: 40
-            
-            [REBIND] {
-                type: button
-                caption: REBIND
-                size: 75, 30
-                alignment: right
-                text.size: 20
-            }
         }
     }
 
@@ -90,20 +80,28 @@
     }
 }
 
-[REBIND_MENU] {
-    alignment: center
-    layout: vertical
-    {
-        type: label
-        caption: Press button for:
-        scale_to_text: true
+[CONTROLS_MENU] {
+    stretch: true
+
+    [KEYS] {
+        layout: vertical
         alignment: center
     }
-    [KEY_NAME] {
-        type: label
-        caption: XXX
-        scale_to_text: true
-        alignment: center
+
+    {
+        layout: vertical
+        alignment: bottom
+        [BACK] {
+            @ref: MAIN_BUTTON
+            caption: BACK
+            keybinding: ESCAPE
+            {
+                type: keynavigator
+                margin: -5
+                stretch: true
+                select: PRIMARY
+            }
+        }
     }
 }
 
@@ -263,26 +261,24 @@
         range: 100
     }
 }
-[@OPTIONS_KEYBINDING] {
-    fill_width: true
-    height: 20
+[@CONTROLS_KEYBINDING] {
     layout: horizontal
     [NAME] {
         type: label
         fill_height: true
-        width: 150
+        size: 100, 20
         caption: ...
         text.size: 20
         text.alignment: right
         margin: 0, 5, 0, 0
     }
-    [VALUE] {
-        type: label
-        stretch: true
-        caption: ...
-        text.size: 20
-        text.alignment: left
-    }
+}
+[@CONTROLS_KEYBINDING_BUTTON] {
+    type: button
+    size: 100, 20
+    caption: ...
+    text.size: 15
+    margin: 2, 0
 }
 [@CREDITS_SECTION] {
     type: label
