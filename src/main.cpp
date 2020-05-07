@@ -11,6 +11,7 @@
 #include <sp2/graphics/gui/theme.h>
 #include <sp2/graphics/gui/loader.h>
 #include <sp2/graphics/gui/widget/button.h>
+#include <sp2/graphics/gui/widget/keynavigator.h>
 #include <sp2/graphics/scene/graphicslayer.h>
 #include <sp2/graphics/scene/basicnoderenderpass.h>
 #include <sp2/graphics/scene/collisionrenderpass.h>
@@ -87,10 +88,10 @@ public:
     Rebinder(sp::P<sp::gui::Widget> parent, sp::P<sp::io::Keybinding> binding, int key_index)
     : sp::Node(parent), binding(binding), index(key_index)
     {
-        //binding->clearKeys();
         binding->startUserRebind();
         sp::P<sp::gui::Widget> w = getParent();
         parent->setAttribute("caption", "?");
+        findNavigator(getScene()->getRoot())->disable();
     }
 
     virtual void onUpdate(float delta) override
@@ -100,7 +101,7 @@ public:
             std::vector<sp::string> keys;
             for(int n=0; !binding->getKey(n).empty(); n++)
                 keys.push_back(binding->getKey(n));
-            if (keys.size() > index + 1)
+            if (int(keys.size()) > index + 1)
             {
                 keys[index] = keys.back();
                 keys.pop_back();
@@ -118,11 +119,25 @@ public:
                     idx ++;
                 }
             }
+            findNavigator(getScene()->getRoot())->enable();
             delete this;
         }
     }
 
 private:
+    sp::P<sp::gui::KeyNavigator> findNavigator(sp::P<sp::Node> node)
+    {
+        if (sp::P<sp::gui::KeyNavigator>(node))
+            return node;
+        for(auto child : node->getChildren())
+        {
+            auto result = findNavigator(child);
+            if (result)
+                return result;
+        }
+        return nullptr;
+    }
+
     sp::P<sp::io::Keybinding> binding;
     int index;
 };
