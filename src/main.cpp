@@ -20,6 +20,7 @@
 #include <sp2/scene/node.h>
 #include <sp2/scene/camera.h>
 #include <sp2/io/keybinding.h>
+#include <array>
 
 #include "main.h"
 #include "mainScene.h"
@@ -85,10 +86,10 @@ static void openOptionsMenu()
 class Rebinder : public sp::Node
 {
 public:
-    Rebinder(sp::P<sp::gui::Widget> parent, sp::P<sp::io::Keybinding> binding, int key_index)
-    : sp::Node(parent), binding(binding), index(key_index)
+    Rebinder(sp::P<sp::gui::Widget> parent, sp::P<sp::io::Keybinding> binding, sp::io::Keybinding::Type bind_type)
+    : sp::Node(parent), binding(binding), bind_type(bind_type)
     {
-        binding->startUserRebind();
+        binding->startUserRebind(bind_type);
         sp::P<sp::gui::Widget> w = getParent();
         parent->setAttribute("caption", "?");
         findNavigator(getScene()->getRoot())->disable();
@@ -98,27 +99,25 @@ public:
     {
         if (!binding->isUserRebinding())
         {
-            std::vector<sp::string> keys;
-            for(int n=0; !binding->getKey(n).empty(); n++)
-                keys.push_back(binding->getKey(n));
-            if (int(keys.size()) > index + 1)
+            //TODO: Remove oldest bind of there are too many keys of this type.
+            int count = 0;
+            for(int n=0; binding->getKeyType(n) != sp::io::Keybinding::Type::None; n++)
+                if (binding->getKeyType(n) & bind_type)
+                    count += 1;
+            if (count > 2)
             {
-                keys[index] = keys.back();
-                keys.pop_back();
-            }
-            binding->clearKeys();
-            for(const auto& key : keys)
-                binding->addKey(key);
-
-            int idx = 0;
-            for(sp::P<sp::gui::Button> w : getParent()->getParent()->getChildren())
-            {
-                if (w)
+                for(int n=0; binding->getKeyType(n) != sp::io::Keybinding::Type::None; n++)
                 {
-                    w->setAttribute("caption", binding->getHumanReadableKeyName(idx));
-                    idx ++;
-                }
+                    if (binding->getKeyType(n) & bind_type)
+                    {
+                        binding->removeKey(n);
+                        break;
+                    }
             }
+            }
+            sp::P<sp::gui::Widget> w = getParent();
+            for(int n=0; binding->getKeyType(n) != sp::io::Keybinding::Type::None; n++)
+                w->setAttribute("caption", binding->getHumanReadableKeyName(n));
             findNavigator(getScene()->getRoot())->enable();
             delete this;
         }
@@ -139,7 +138,7 @@ private:
     }
 
     sp::P<sp::io::Keybinding> binding;
-    int index;
+    sp::io::Keybinding::Type bind_type;
 };
 
 static void openControlsMenu()
@@ -148,17 +147,33 @@ static void openControlsMenu()
     sp::P<sp::gui::Widget> menu = loader.create("CONTROLS_MENU");
     //new Rebinder(menu);
 
+    std::array<sp::io::Keybinding::Type, 4> key_types{
+        sp::io::Keybinding::Type::Keyboard,
+        sp::io::Keybinding::Type::Keyboard,
+        sp::io::Keybinding::Type::Controller,
+        sp::io::Keybinding::Type::Controller,
+    };
     for(auto keybinding : controller.all)
     {
         sp::P<sp::gui::Widget> keybinding_menu = loader.create("@CONTROLS_KEYBINDING", menu->getWidgetWithID("KEYS"));
         keybinding_menu->getWidgetWithID("NAME")->setAttribute("caption", keybinding->getLabel() + ":");
+        int done = 0;
         for(int n=0; n<4; n++)
         {
             auto button = loader.create("@CONTROLS_KEYBINDING_BUTTON", keybinding_menu);
-            button->setAttribute("caption", keybinding->getHumanReadableKeyName(n));
+            button->setAttribute("caption", "");
+            for(int m=0; keybinding->getKeyType(m) != sp::io::Keybinding::Type::None; m++)
+            {
+                if (!(done & (1 << m)) && (keybinding->getKeyType(m) & key_types[n]))
+                {
+                    done |= 1 << m;
+                    button->setAttribute("caption", keybinding->getHumanReadableKeyName(m));
+                    break;
+                }
+            }
             button->setEventCallback([=](sp::Variant v) mutable
             {
-                new Rebinder(button, keybinding, n);
+                new Rebinder(button, keybinding, key_types[n]);
             });
         }
     }
