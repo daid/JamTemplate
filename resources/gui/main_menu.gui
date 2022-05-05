@@ -38,7 +38,6 @@
         [QUIT] {
             @ref: MAIN_BUTTON
             caption: QUIT
-            keybinding: ESCAPE
         }
     }
 }
